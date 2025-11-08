@@ -67,7 +67,7 @@ public class TwoShoot extends LinearOpMode {
         waitForStart();
 
         // --- 1️⃣ Spin up shooter motor ---
-        double targetPower = 0.8;                   // flywheel power level
+        double targetPower = 0.65;                   // flywheel power level
         shooterMotor.setPower(targetPower);
         double targetVelocity = 6000 * targetPower; // estimate in ticks/sec
         double tolerance = 0.05;                    // 5% tolerance
@@ -101,14 +101,16 @@ public class TwoShoot extends LinearOpMode {
         telemetry.addLine("Feeding first ball...");
         telemetry.update();
         backIntake.setPower(1.0);   // lift first ball up to shooter
-        sleep(1200);
+        sleep(1500);
         backIntake.setPower(0.0);
+
+        sleep(2000);
 
         // --- 4️⃣ Reload sequence: use frontIntake to load next ball ---
         telemetry.addLine("Reloading second ball...");
         telemetry.update();
         frontIntake.setPower(1.0);  // pick up from ground
-        sleep(1200);                // let front intake load onto elevator
+        sleep(4000);                // let front intake load onto elevator
         frontIntake.setPower(0.0);
 
         // --- 5️⃣ Wait for elevator to reset ---
