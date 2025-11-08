@@ -1,5 +1,8 @@
 package org.firstinspires.ftc.teamcode;
 
+import static com.pedropathing.math.MathFunctions.clamp;
+
+import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -64,69 +67,38 @@ public class Autotwolaucnh extends LinearOpMode {
 
         turretHood.setPosition(.5);
 
+        LLResult ll = limelight.getLatestResult();
+        boolean targetVisible = (ll != null && ll.isValid());
+        double tx = targetVisible ? ll.getTx() : 0.0;
+        double ty = targetVisible ? ll.getTy() : 0.0;
+
         // --- 1️⃣ Spin up shooter motor ---
-        double targetPower = 0.8; // target power
-        shooterMotor.setPower(targetPower);
-
-        double targetVelocity = 6000 * targetPower; // rough guess: 6000 ticks/sec max
-        double tolerance = 0.10; // 10% tolerance
-        int lastTicks = shooterMotor.getCurrentPosition();
-        long lastTime = System.currentTimeMillis();
-        double velocity = 0;
-
-        // --- 2️⃣ Wait until shooter is up to speed ---
-        while (opModeIsActive()) {
-            int currentTicks = shooterMotor.getCurrentPosition();
-            long now = System.currentTimeMillis();
-            double dt = (now - lastTime) / 1000.0;
-            if (dt > 0) velocity = (currentTicks - lastTicks) / dt;
-
-            lastTicks = currentTicks;
-            lastTime = now;
-
-            boolean upToSpeed = Math.abs(velocity - targetVelocity) <= (targetVelocity * tolerance);
-
-            telemetry.addData("Velocity (ticks/sec)", velocity);
-            telemetry.addData("Target Velocity", targetVelocity);
-            telemetry.addData("Up to speed?", upToSpeed);
-            telemetry.update();
-
-            if (upToSpeed) break; // exit loop when shooter is ready
+        if (targetVisible) {
+            if (Math.abs(tx) > deadbandDeg) {
+                double turretPower = kP_TURRET * tx;
+                turretPower = clamp(turretPower, -0.5, 0.5);
+                turretSpin.setPower(turretPower);
+            } else {
+                turretSpin.setPower(0.0);
+            }
+        } else {
+            turretSpin.setPower(0.0);
         }
 
-        // --- 3️⃣ Feed ball with backIntake ---
-        backIntake.setPower(1.0);
-        sleep(1500); // feed for 1.5 seconds
-        backIntake.setPower(0.0);
 
+        // --- Shooter auto-speed ---
+        double targetShooterPower = 0.0; // initialize target power
 
-        frontIntake.setPower(1.0);
-        sleep(1500);
-
-        backIntake.setPower(1.0);
-        sleep(1500);
-        backIntake.setPower(0.0);
-
-
-        // --- 4️⃣ Optionally drive forward ---
-        double drivePower = 0.3;
-        frontLeft.setPower(drivePower);
-        frontRight.setPower(drivePower);
-        backLeft.setPower(drivePower);
-        backRight.setPower(drivePower);
-        sleep(2000);
-
-        // --- 5️⃣ Stop everything ---
-        frontLeft.setPower(0);
-        frontRight.setPower(0);
-        backLeft.setPower(0);
-        backRight.setPower(0);
-        shooterMotor.setPower(0);
-        backIntake.setPower(0);
-        frontIntake.setPower(0);
-
-        telemetry.addLine("Done!");
-        telemetry.update();
+        if (gamepad1.y) {
+            double distance = (TARGET_HEIGHT - CAMERA_HEIGHT) /
+                    Math.tan(Math.toRadians(CAMERA_ANGLE + ty));
+            distance = Math.max(MIN_DISTANCE, Math.min(MAX_DISTANCE, distance));
+            targetShooterPower = MIN_POWER + (distance - MIN_DISTANCE) / (MAX_DISTANCE - MIN_DISTANCE) * (MAX_POWER - MIN_POWER);
+            shooterMotor.setPower(targetShooterPower);
+        } else {
+            shooterMotor.setPower(0.0);
+            targetShooterPower = 0.0;
+        }
     }
 }
 

@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.IMU;
+import com.qualcomm.robotcore.hardware.Servo;
 
 
 @Autonomous(name="SimpleForwardAuto", group="Autonomous")
@@ -26,6 +27,7 @@ public class SimpleForwardAuto extends LinearOpMode {
 
     private DcMotor frontLeft, frontRight, backLeft, backRight;
     private DcMotor shooterMotor, turretSpin, backIntake;
+    private Servo turretHood;
     private Limelight3A limelight;
     private IMU imu;
 
@@ -43,12 +45,14 @@ public class SimpleForwardAuto extends LinearOpMode {
         frontRight = hardwareMap.get(DcMotor.class, "frontRight");
         backLeft = hardwareMap.get(DcMotor.class, "backLeft");
         backRight = hardwareMap.get(DcMotor.class, "backRight");
+        turretHood = hardwareMap.get(Servo.class, "turretHood");
 
         // --- setup ---
         frontLeft.setDirection(DcMotor.Direction.FORWARD);
         backLeft.setDirection(DcMotor.Direction.FORWARD);
         frontRight.setDirection(DcMotor.Direction.REVERSE);
         backRight.setDirection(DcMotor.Direction.REVERSE);
+
 
         shooterMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         shooterMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -58,6 +62,8 @@ public class SimpleForwardAuto extends LinearOpMode {
         telemetry.update();
 
         waitForStart();
+
+        turretHood.setPosition(.45);
 
         // --- 1️⃣ Spin up shooter motor ---
         double targetPower = 0.65; // target power

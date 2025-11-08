@@ -1,5 +1,8 @@
 package org.firstinspires.ftc.teamcode;
 
+import static com.pedropathing.math.MathFunctions.clamp;
+
+import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -25,7 +28,7 @@ public class TwoShoot extends LinearOpMode {
 
 
     private DcMotor frontLeft, frontRight, backLeft, backRight;
-    private DcMotor shooterMotor, turretSpin, backIntake,frontIntake;
+    private DcMotor shooterMotor, turretSpin, backIntake, frontIntake;
     private Limelight3A limelight;
     private IMU imu;
 
@@ -35,9 +38,8 @@ public class TwoShoot extends LinearOpMode {
 
         shooterMotor = hardwareMap.get(DcMotor.class, "shooterMotor");
         turretSpin = hardwareMap.get(DcMotor.class, "turretOne");
-        backIntake = hardwareMap.get(DcMotor.class, "backIntake");
-        frontIntake = hardwareMap.get(DcMotor.class, "frontIntake");
-
+        backIntake = hardwareMap.get(DcMotor.class, "backIntake"); // elevator
+        frontIntake = hardwareMap.get(DcMotor.class, "frontIntake"); // ground intake
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
         imu = hardwareMap.get(IMU.class, "imu");
 
@@ -56,22 +58,25 @@ public class TwoShoot extends LinearOpMode {
         shooterMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         shooterMotor.setDirection(DcMotor.Direction.REVERSE);
 
+        frontIntake.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        backIntake.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
         telemetry.addLine("Ready to run");
         telemetry.update();
 
         waitForStart();
 
         // --- 1️⃣ Spin up shooter motor ---
-        double targetPower = 0.65; // target power
+        double targetPower = 0.8;                   // flywheel power level
         shooterMotor.setPower(targetPower);
+        double targetVelocity = 6000 * targetPower; // estimate in ticks/sec
+        double tolerance = 0.05;                    // 5% tolerance
 
-        double targetVelocity = 6000 * targetPower; // rough guess: 6000 ticks/sec max
-        double tolerance = 0.10; // 5% tolerance
         int lastTicks = shooterMotor.getCurrentPosition();
         long lastTime = System.currentTimeMillis();
         double velocity = 0;
 
-        // --- 2️⃣ Wait until shooter is up to speed ---
+        // --- 2️⃣ Wait for shooter to reach target velocity ---
         while (opModeIsActive()) {
             int currentTicks = shooterMotor.getCurrentPosition();
             long now = System.currentTimeMillis();
@@ -81,29 +86,45 @@ public class TwoShoot extends LinearOpMode {
             lastTicks = currentTicks;
             lastTime = now;
 
-            boolean upToSpeed = Math.abs(velocity - targetVelocity) <= (targetVelocity * tolerance);
+            boolean upToSpeed = Math.abs(velocity - targetVelocity)
+                    <= (targetVelocity * tolerance);
 
             telemetry.addData("Velocity (ticks/sec)", velocity);
             telemetry.addData("Target Velocity", targetVelocity);
             telemetry.addData("Up to speed?", upToSpeed);
             telemetry.update();
 
-            if (upToSpeed) break; // exit loop when shooter is ready
+            if (upToSpeed) break; // ready to shoot
         }
 
-        // --- 3️⃣ Feed ball with backIntake ---
-        backIntake.setPower(1.0);
-        sleep(1500); // feed for 1.5 seconds
+        // --- 3️⃣ Feed FIRST ball ---
+        telemetry.addLine("Feeding first ball...");
+        telemetry.update();
+        backIntake.setPower(1.0);   // lift first ball up to shooter
+        sleep(1200);
         backIntake.setPower(0.0);
 
-        frontIntake.setPower(1.0);
+        // --- 4️⃣ Reload sequence: use frontIntake to load next ball ---
+        telemetry.addLine("Reloading second ball...");
+        telemetry.update();
+        frontIntake.setPower(1.0);  // pick up from ground
+        sleep(1200);                // let front intake load onto elevator
+        frontIntake.setPower(0.0);
+
+        // --- 5️⃣ Wait for elevator to reset ---
         sleep(1500);
 
-        backIntake.setPower(1.0);
-        sleep(1500);
+        // --- 6️⃣ Feed SECOND ball ---
+        telemetry.addLine("Feeding second ball...");
+        telemetry.update();
+        backIntake.setPower(1.0);   // lift second ball
+        sleep(1200);
         backIntake.setPower(0.0);
 
-        // --- 4️⃣ Optionally drive forward ---
+        // --- 7️⃣ Optional: stop shooter and drive forward ---
+        sleep(500);
+        shooterMotor.setPower(0.0);
+
         double drivePower = 0.3;
         frontLeft.setPower(drivePower);
         frontRight.setPower(drivePower);
@@ -111,15 +132,16 @@ public class TwoShoot extends LinearOpMode {
         backRight.setPower(drivePower);
         sleep(3000);
 
-        // --- 5️⃣ Stop everything ---
+        // --- 8️⃣ Stop all ---
         frontLeft.setPower(0);
         frontRight.setPower(0);
         backLeft.setPower(0);
         backRight.setPower(0);
         shooterMotor.setPower(0);
+        frontIntake.setPower(0);
         backIntake.setPower(0);
 
-        telemetry.addLine("Done!");
+        telemetry.addLine("All done!");
         telemetry.update();
     }
 }
