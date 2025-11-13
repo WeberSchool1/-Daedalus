@@ -1,38 +1,41 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.bylazar.panels.Panels;
+import com.bylazar.limelightproxy.LimelightProxyConfig;
+import com.bylazar.fullpanels.FullPanelsPluginConfig;
+import com.bylazar.telemetry.TelemetryManager;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 
-@TeleOp(name = "henneryBlue", group = "TeleOp")
-public class henneryBlue extends LinearOpMode {
+@TeleOp(name = "DeadalusFinal", group = "TeleOp")
+public class DeadalusFinal extends LinearOpMode {
     private static final double DRIVE_SCALE = 0.85;
 
     private DcMotor frontLeft, frontRight, backLeft, backRight;
     private DcMotor shooterMotor, frontIntake, backIntake, turretSpin;
-    private Servo turretHood, rightLed, leftLed, elevator;
+    private Servo turretServo, turretHood, redLed;
     private Limelight3A limelight;
 
-    // Turret auto-align constants
+    // Turret auto‑align constants
     private final double kP_TURRET = 0.02;
     private final double deadbandDeg = 0.5;
 
-    // Shooter auto-speed constants
+    // Shooter auto‑speed constants
     private final double CAMERA_HEIGHT = 12.54; // inches
     private final double TARGET_HEIGHT = 24.0;  // example: hub height
     private final double CAMERA_ANGLE = 19.0;   // degrees
     private final double MIN_DISTANCE = 20.0;   // inches
     private final double MAX_DISTANCE = 140.0;  // inches
     private final double MIN_POWER = 0.45;
-    private final double MAX_POWER = 0.78;
+    private final double MAX_POWER = 0.8;
 
     @Override
     public void runOpMode() throws InterruptedException {
-
-
+        // Panels telemetry
 
         // --- Hardware mapping ---
         frontLeft = hardwareMap.get(DcMotor.class, "frontLeft");
@@ -54,14 +57,14 @@ public class henneryBlue extends LinearOpMode {
         backIntake = hardwareMap.get(DcMotor.class, "backIntake");
         turretSpin = hardwareMap.get(DcMotor.class, "turretOne");
 
+        turretServo = hardwareMap.get(Servo.class, "turretTurn");
         turretHood = hardwareMap.get(Servo.class, "turretHood");
-        elevator = hardwareMap.get(Servo.class, "turret");
-        leftLed = hardwareMap.get(Servo.class, "LEDLeft");
-        rightLed = hardwareMap.get(Servo.class, "LEDRight");
-        limelight = hardwareMap.get(Limelight3A.class, "limelight");
-        limelight.pipelineSwitch(4);
+        redLed = hardwareMap.get(Servo.class, "LEDLeft");
 
-        telemetry.addLine("henneryFinal initialized. Press start.");
+        limelight = hardwareMap.get(Limelight3A.class, "limelight");
+        limelight.pipelineSwitch(5);
+
+        telemetry.addLine("DeadalusFinal initialized. Press start.");
         telemetry.update();
 
         waitForStart();
@@ -95,7 +98,7 @@ public class henneryBlue extends LinearOpMode {
             double tx = targetVisible ? ll.getTx() : 0.0;
             double ty = targetVisible ? ll.getTy() : 0.0;
 
-            // --- Turret auto-align ---
+            // --- Turret auto‑align ---
             if (targetVisible) {
                 if (Math.abs(tx) > deadbandDeg) {
                     double turretPower = kP_TURRET * tx;
@@ -108,74 +111,42 @@ public class henneryBlue extends LinearOpMode {
                 turretSpin.setPower(0.0);
             }
 
+            // --- Turret hood control ---
+            if (gamepad1.right_bumper) turretHood.setPosition(0.8);
+            else if (gamepad1.left_bumper) turretHood.setPosition(0.45);
 
-            // --- Shooter auto-speed ---
-            double targetShooterPower = 0.0; // initialize target power
-
-            if (gamepad1.right_bumper) {
+            // --- Shooter auto‑speed ---
+            double targetShooterPower = 0.0;
+            if (gamepad1.y) {
                 double distance = (TARGET_HEIGHT - CAMERA_HEIGHT) /
-                        Math.tan(Math.toRadians(CAMERA_ANGLE + ty));
+                                  Math.tan(Math.toRadians(CAMERA_ANGLE + ty));
                 distance = Math.max(MIN_DISTANCE, Math.min(MAX_DISTANCE, distance));
-                targetShooterPower = MIN_POWER + (distance - MIN_DISTANCE) / (MAX_DISTANCE - MIN_DISTANCE) * (MAX_POWER - MIN_POWER);
+                targetShooterPower = MIN_POWER + (distance - MIN_DISTANCE) /
+                                     (MAX_DISTANCE - MIN_DISTANCE) * (MAX_POWER - MIN_POWER);
                 shooterMotor.setPower(targetShooterPower);
-            } else if (gamepad1.left_bumper) {
+            } else {
                 shooterMotor.setPower(0.0);
                 targetShooterPower = 0.0;
             }
 
-// --- Intake controls ---
+            // --- Intake controls ---
             double intakePower = gamepad1.right_trigger - gamepad1.left_trigger;
             frontIntake.setPower(intakePower);
 
-            if (gamepad1.b) {
-                backIntake.setPower(.9);
+            if (gamepad1.right_bumper) {
+                backIntake.setPower(0.9);
             } else {
-                backIntake.setPower(0);}
-
-
-// --- Turret hood ---
-            if (gamepad1.dpad_up) {
-                turretHood.setPosition(0.8);
-            }
-            if (gamepad1.dpad_down) {
-                turretHood.setPosition(0.45);}
-
-            if (gamepad1.dpad_left){
-                turretSpin.setPower(-.3);
-            }
-            if (gamepad1.dpad_right){
-                turretSpin.setPower(.3);
+                backIntake.setPower(0);
             }
 
-
-// --- LED feedback ---
-            if (targetVisible){
-                leftLed.setPosition(.611);
-                rightLed.setPosition(.611);}
-            else { leftLed.setPosition(0);
-                rightLed.setPosition(0);}
-
-            // ----Elevator up-----
-            if(gamepad1.a){
-                elevator.setPosition(.0);
-            }else {
-                elevator.setPosition(.5);
+            // LED feedback
+            if (targetVisible) {
+                redLed.setPosition(0.611);
+            } else {
+                redLed.setPosition(0);
             }
-// --- Telemetry ---
 
-            telemetry.addData("Target Visible", targetVisible);
-            telemetry.addData("tx", tx);
-            telemetry.addData("ty", ty);
-            telemetry.addData("Shooter Power", shooterMotor.getPower());
-            telemetry.addData("Target Shooter Power", targetShooterPower);
-
-// Shooter up-to-speed check (tolerance 0.02)
-            boolean shooterAtSpeed = Math.abs(shooterMotor.getPower() - targetShooterPower) < 0.02;
-            telemetry.addData("Shooter At Speed", shooterAtSpeed);
-
-
-            telemetry.update();
-
+            // --- Panels telemetry output ---
         }
     }
 

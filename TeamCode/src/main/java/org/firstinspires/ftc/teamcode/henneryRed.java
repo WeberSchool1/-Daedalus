@@ -117,13 +117,13 @@ public class henneryRed extends LinearOpMode {
             // --- Shooter auto-speed ---
             double targetShooterPower = 0.0; // initialize target power
 
-            if (gamepad1.y) {
+            if (gamepad1.right_bumper) {
                 double distance = (TARGET_HEIGHT - CAMERA_HEIGHT) /
                         Math.tan(Math.toRadians(CAMERA_ANGLE + ty));
                 distance = Math.max(MIN_DISTANCE, Math.min(MAX_DISTANCE, distance));
                 targetShooterPower = MIN_POWER + (distance - MIN_DISTANCE) / (MAX_DISTANCE - MIN_DISTANCE) * (MAX_POWER - MIN_POWER);
                 shooterMotor.setPower(targetShooterPower);
-            } else {
+            } else if (gamepad1.left_bumper){
                 shooterMotor.setPower(0.0);
                 targetShooterPower = 0.0;
             }
@@ -132,7 +132,7 @@ public class henneryRed extends LinearOpMode {
             double intakePower = gamepad1.right_trigger - gamepad1.left_trigger;
             frontIntake.setPower(intakePower);
 
-            if (gamepad1.right_bumper) {
+            if (gamepad1.b) {
                 backIntake.setPower(.9);
             } else {
                 backIntake.setPower(0);}
@@ -140,10 +140,10 @@ public class henneryRed extends LinearOpMode {
 
 // --- Turret hood ---
             if (gamepad1.dpad_up) {
-                turretHood.setPosition(0.8);
+                turretHood.setPosition(0.45);
             }
              if (gamepad1.dpad_down) {
-                 turretHood.setPosition(0.45);}
+                 turretHood.setPosition(0.8);}
 
             if (gamepad1.dpad_left){
                 turretSpin.setPower(-.3);
