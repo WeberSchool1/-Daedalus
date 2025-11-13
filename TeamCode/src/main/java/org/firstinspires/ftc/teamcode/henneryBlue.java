@@ -13,7 +13,7 @@ public class henneryBlue extends LinearOpMode {
 
     private DcMotor frontLeft, frontRight, backLeft, backRight;
     private DcMotor shooterMotor, frontIntake, backIntake, turretSpin;
-    private Servo turretHood, rightLed, leftLed;
+    private Servo turretHood, rightLed, leftLed, turretOne;
     private Limelight3A limelight;
 
     // Turret auto-align constants
@@ -55,6 +55,8 @@ public class henneryBlue extends LinearOpMode {
         turretSpin = hardwareMap.get(DcMotor.class, "turretOne");
 
         turretHood = hardwareMap.get(Servo.class, "turretHood");
+        turretOne = hardwareMap.get(Servo.class, "turret");
+
         leftLed = hardwareMap.get(Servo.class, "LEDLeft");
         rightLed = hardwareMap.get(Servo.class, "LEDRight");
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
@@ -167,6 +169,13 @@ public class henneryBlue extends LinearOpMode {
 
 
             telemetry.update();
+
+            if (gamepad1.a){
+                turretOne.setPosition(.5);
+            }
+            if (gamepad1.b){
+                turretOne.setPosition(.0);
+            }
 
         }
     }
