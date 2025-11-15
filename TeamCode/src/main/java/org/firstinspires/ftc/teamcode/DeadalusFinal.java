@@ -49,7 +49,6 @@ public class DeadalusFinal extends LinearOpMode {
         backRight.setDirection(DcMotor.Direction.REVERSE);
 
         shooterMotor = hardwareMap.get(DcMotor.class, "shooterMotor");
-        shooterMotor.setDirection(DcMotor.Direction.REVERSE);
         shooterMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         shooterMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
@@ -93,66 +92,10 @@ public class DeadalusFinal extends LinearOpMode {
             backRight.setPower(br);
 
             // --- Limelight read ---
-            LLResult ll = limelight.getLatestResult();
-            boolean targetVisible = (ll != null && ll.isValid());
-            double tx = targetVisible ? ll.getTx() : 0.0;
-            double ty = targetVisible ? ll.getTy() : 0.0;
-
-            // --- Turret auto‑align ---
-            if (targetVisible) {
-                if (Math.abs(tx) > deadbandDeg) {
-                    double turretPower = kP_TURRET * tx;
-                    turretPower = clamp(turretPower, -0.5, 0.5);
-                    turretSpin.setPower(turretPower);
-                } else {
-                    turretSpin.setPower(0.0);
-                }
-            } else {
-                turretSpin.setPower(0.0);
+            if (gamepad1.b){
+                shooterMotor.setPower(.1);
             }
-
-            // --- Turret hood control ---
-            if (gamepad1.right_bumper) turretHood.setPosition(0.8);
-            else if (gamepad1.left_bumper) turretHood.setPosition(0.45);
-
-            // --- Shooter auto‑speed ---
-            double targetShooterPower = 0.0;
-            if (gamepad1.y) {
-                double distance = (TARGET_HEIGHT - CAMERA_HEIGHT) /
-                                  Math.tan(Math.toRadians(CAMERA_ANGLE + ty));
-                distance = Math.max(MIN_DISTANCE, Math.min(MAX_DISTANCE, distance));
-                targetShooterPower = MIN_POWER + (distance - MIN_DISTANCE) /
-                                     (MAX_DISTANCE - MIN_DISTANCE) * (MAX_POWER - MIN_POWER);
-                shooterMotor.setPower(targetShooterPower);
-            } else {
-                shooterMotor.setPower(0.0);
-                targetShooterPower = 0.0;
-            }
-
-            // --- Intake controls ---
-            double intakePower = gamepad1.right_trigger - gamepad1.left_trigger;
-            frontIntake.setPower(intakePower);
-
-            if (gamepad1.right_bumper) {
-                backIntake.setPower(0.9);
-            } else {
-                backIntake.setPower(0);
-            }
-
-            // LED feedback
-            if (targetVisible) {
-                redLed.setPosition(0.611);
-            } else {
-                redLed.setPosition(0);
-            }
-
-            // --- Panels telemetry output ---
+            else { shooterMotor.setPower(0);}
         }
-    }
-
-    private double clamp(double val, double min, double max) {
-        if (val < min) return min;
-        if (val > max) return max;
-        return val;
     }
 }

@@ -1,7 +1,5 @@
 package org.firstinspires.ftc.teamcode;
 
-import static com.pedropathing.math.MathFunctions.clamp;
-
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
@@ -11,8 +9,8 @@ import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
 
 
-@Autonomous(name="Audience3ball", group="Autonomous")
-public class Autotwolaucnh extends LinearOpMode {
+@Autonomous(name="closered", group="Autonomous")
+public class closeRed extends LinearOpMode {
     private final double kP_TURRET = 0.02;
     private final double ALIGN_TOLERANCE = 1.0; // degrees
     private final double CAMERA_HEIGHT = 12.54; // inches
@@ -30,7 +28,7 @@ public class Autotwolaucnh extends LinearOpMode {
 
     private DcMotor frontLeft, frontRight, backLeft, backRight;
     private DcMotor shooterMotor, turretSpin, backIntake, frontIntake;
-    private Servo elevator;
+    private Servo turretHood, elevator;
     private Limelight3A limelight;
     private IMU imu;
 
@@ -39,10 +37,8 @@ public class Autotwolaucnh extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
 
         shooterMotor = hardwareMap.get(DcMotor.class, "shooterMotor");
-        elevator = hardwareMap.get(Servo.class, "turret");
         turretSpin = hardwareMap.get(DcMotor.class, "turretOne");
         backIntake = hardwareMap.get(DcMotor.class, "backIntake");
-        frontIntake = hardwareMap.get(DcMotor.class, "frontIntake");
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
         imu = hardwareMap.get(IMU.class, "imu");
 
@@ -50,12 +46,18 @@ public class Autotwolaucnh extends LinearOpMode {
         frontRight = hardwareMap.get(DcMotor.class, "frontRight");
         backLeft = hardwareMap.get(DcMotor.class, "backLeft");
         backRight = hardwareMap.get(DcMotor.class, "backRight");
+        turretHood = hardwareMap.get(Servo.class, "turretHood");
+        elevator = hardwareMap.get(Servo.class, "turret");
+        frontIntake = hardwareMap.get(DcMotor.class, "frontIntake");
+
+
 
         // --- setup ---
         frontLeft.setDirection(DcMotor.Direction.FORWARD);
         backLeft.setDirection(DcMotor.Direction.FORWARD);
         frontRight.setDirection(DcMotor.Direction.REVERSE);
         backRight.setDirection(DcMotor.Direction.REVERSE);
+
 
         shooterMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         shooterMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -64,16 +66,31 @@ public class Autotwolaucnh extends LinearOpMode {
 
         waitForStart();
 
+        turretHood.setPosition(.45);
+
+        // --- Limelight read ---
         LLResult ll = limelight.getLatestResult();
         boolean targetVisible = (ll != null && ll.isValid());
         double tx = targetVisible ? ll.getTx() : 0.0;
         double ty = targetVisible ? ll.getTy() : 0.0;
 
+        double drivePower = 0.3;
+        frontLeft.setPower(drivePower);
+        frontRight.setPower(drivePower);
+        backLeft.setPower(drivePower);
+        backRight.setPower(drivePower);
+        sleep(2005);
+        frontLeft.setPower(0);
+        frontRight.setPower(0);
+        backLeft.setPower(0);
+        backRight.setPower(0);
+
+        // --- Turret auto-align ---
         // --- 1️⃣ Spin up shooter motor ---
-        double targetPower = 0.65;                   // flywheel power level
+        double targetPower = 0.449;                   // flywheel power level
         shooterMotor.setPower(targetPower);
         double targetVelocity = 6000 * targetPower; // estimate in ticks/sec
-        double tolerance = 0.05;                    // 5% tolerance
+        double tolerance = 0.11;                    // 5% tolerance
 
         int lastTicks = shooterMotor.getCurrentPosition();
         long lastTime = System.currentTimeMillis();
@@ -100,52 +117,60 @@ public class Autotwolaucnh extends LinearOpMode {
             if (upToSpeed) break; // ready to shoot
         }
 
+        sleep(600);
+
         // --- 3️⃣ Feed FIRST ball ---
         telemetry.addLine("Feeding first ball...");
         telemetry.update();
         elevator.setPosition(0);   // lift first ball up to shooter
-        sleep(1500);
+        sleep(1000);
         elevator.setPosition(.6);
-
-        sleep(2000);
 
         // --- 4️⃣ Reload sequence: use frontIntake to load next ball ---
         telemetry.addLine("Reloading second ball...");
         telemetry.update();
         frontIntake.setPower(1.0);  // pick up from ground
-        sleep(2000);                // let front intake load onto elevator
+        sleep(1000);                // let front intake load onto elevator
         frontIntake.setPower(0.0);
-
-        // --- 5️⃣ Wait for elevator to reset ---
-        sleep(1500);
 
         // --- 6️⃣ Feed SECOND ball ---
         telemetry.addLine("Feeding second ball...");
         telemetry.update();
-       elevator.setPosition(0);   // lift second ball
-        sleep(1200);
+        elevator.setPosition(0);   // lift second ball
+        sleep(1000);
         elevator.setPosition(.6);
 
         backIntake.setPower(1.0);
-        sleep(2000);
+        sleep(1000);
         backIntake.setPower(0);
+
+        sleep(500);
+
+        elevator.setPosition(0);
+        sleep(1500);
+        elevator.setPosition(.6);
+
+        // --- Strafe right for 1.5 seconds ---
+        double strafePower = 0.5;
+
+// Mecanum strafing configuration
+        frontLeft.setPower(strafePower);
+        backLeft.setPower(-strafePower);
+        frontRight.setPower(-strafePower);
+        backRight.setPower(strafePower);
 
         sleep(1500);
 
-        elevator.setPosition(0);
-        sleep(1200);
-        elevator.setPosition(.6);
+// Stop all drive motors
+        frontLeft.setPower(0);
+        backLeft.setPower(0);
+        frontRight.setPower(0);
+        backRight.setPower(0);
 
-        // --- 7️⃣ Optional: stop shooter and drive forward ---
-        sleep(500);
-        shooterMotor.setPower(0.0);
 
-        double drivePower = 0.3;
-        frontLeft.setPower(drivePower);
-        frontRight.setPower(drivePower);
-        backLeft.setPower(drivePower);
-        backRight.setPower(drivePower);
-        sleep(3000);
+
+
+
 
         // --- 8️⃣ Stop all ---
         frontLeft.setPower(0);
@@ -156,8 +181,6 @@ public class Autotwolaucnh extends LinearOpMode {
         frontIntake.setPower(0);
         backIntake.setPower(0);
 
-        telemetry.addLine("All done!");
-        telemetry.update();
     }
 }
 
