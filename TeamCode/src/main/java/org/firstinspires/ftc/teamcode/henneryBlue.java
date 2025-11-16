@@ -15,7 +15,7 @@ public class henneryBlue extends LinearOpMode {
 
     private DcMotor frontLeft, frontRight, backLeft, backRight;
     private DcMotor shooterMotor, frontIntake, backIntake, turretSpin;
-    private Servo turretHood, rightLed, leftLed, elevator;
+    private Servo turretHood, rightLed, leftLed, elevator,rightPTO,leftPTO;
     private Limelight3A limelight;
 
     // Turret auto-align constants
@@ -55,6 +55,9 @@ public class henneryBlue extends LinearOpMode {
         backIntake = hardwareMap.get(DcMotor.class, "backIntake");
         turretSpin = hardwareMap.get(DcMotor.class, "turretOne");
 
+
+        rightPTO = hardwareMap.get(Servo.class,"rightPTO");
+        leftPTO = hardwareMap.get(Servo.class,"rightPTO");
         turretHood = hardwareMap.get(Servo.class, "turretHood");
         elevator = hardwareMap.get(Servo.class, "turret");
         leftLed = hardwareMap.get(Servo.class, "LEDLeft");
@@ -68,6 +71,8 @@ public class henneryBlue extends LinearOpMode {
         waitForStart();
         limelight.start();
 
+        rightPTO.setPosition(.075);
+        leftPTO.setPosition(.045);
         while (opModeIsActive()) {
             // --- Drive controls ---
             double driveY = -gamepad1.left_stick_y * DRIVE_SCALE;
@@ -95,8 +100,6 @@ public class henneryBlue extends LinearOpMode {
             boolean targetVisible = (ll != null && ll.isValid());
             double tx = targetVisible ? ll.getTx() : 0.0;
             double ty = targetVisible ? ll.getTy() : 0.0;
-
-
 
             // --- Turret auto-align ---
             if (targetVisible) {
@@ -171,6 +174,14 @@ public class henneryBlue extends LinearOpMode {
                 elevator.setPosition(.0);
             }else {
                 elevator.setPosition(.5);
+            }
+
+            if(gamepad1.dpad_up){
+                rightPTO.setPosition(.075);
+                leftPTO.setPosition(.045);
+            } if (gamepad1.dpad_down){
+                rightPTO.setPosition(.55);
+                leftPTO.setPosition(.49);
             }
 // --- Telemetry ---
 

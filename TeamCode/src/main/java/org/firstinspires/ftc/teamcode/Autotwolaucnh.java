@@ -104,7 +104,7 @@ public class Autotwolaucnh extends LinearOpMode {
         telemetry.addLine("Feeding first ball...");
         telemetry.update();
         elevator.setPosition(0);   // lift first ball up to shooter
-        sleep(1500);
+        sleep(1000);
         elevator.setPosition(.6);
 
         sleep(2000);
@@ -113,24 +113,24 @@ public class Autotwolaucnh extends LinearOpMode {
         telemetry.addLine("Reloading second ball...");
         telemetry.update();
         frontIntake.setPower(1.0);  // pick up from ground
-        sleep(2000);                // let front intake load onto elevator
+        sleep(1500);                // let front intake load onto elevator
         frontIntake.setPower(0.0);
 
         // --- 5️⃣ Wait for elevator to reset ---
-        sleep(1500);
+        sleep(1000);
 
         // --- 6️⃣ Feed SECOND ball ---
         telemetry.addLine("Feeding second ball...");
         telemetry.update();
        elevator.setPosition(0);   // lift second ball
-        sleep(1200);
+        sleep(1000);
         elevator.setPosition(.6);
 
         backIntake.setPower(1.0);
-        sleep(2000);
+        sleep(1500);
         backIntake.setPower(0);
 
-        sleep(1500);
+        sleep(1000);
 
         elevator.setPosition(0);
         sleep(1200);
