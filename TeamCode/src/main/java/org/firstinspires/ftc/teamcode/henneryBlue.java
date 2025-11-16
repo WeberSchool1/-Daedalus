@@ -24,7 +24,7 @@ public class henneryBlue extends LinearOpMode {
 
     // Shooter auto-speed constants
     private final double CAMERA_HEIGHT = 12.54; // inches
-    private final double TARGET_HEIGHT = 24.0;  // example: hub height
+    private final double TARGET_HEIGHT = 29.5;  // example: hub height
     private final double CAMERA_ANGLE = 19.0;   // degrees
     private final double MIN_DISTANCE = 20.0;   // inches
     private final double MAX_DISTANCE = 140.0;  // inches
