@@ -2,9 +2,11 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
+import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
 
 @TeleOp(name = "henneryBlue", group = "TeleOp")
@@ -46,7 +48,6 @@ public class henneryBlue extends LinearOpMode {
         backRight.setDirection(DcMotor.Direction.REVERSE);
 
         shooterMotor = hardwareMap.get(DcMotor.class, "shooterMotor");
-        shooterMotor.setDirection(DcMotor.Direction.REVERSE);
         shooterMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         shooterMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
@@ -79,7 +80,7 @@ public class henneryBlue extends LinearOpMode {
             double br = driveY - driveX - turn;
 
             double max = Math.max(Math.max(Math.abs(fl), Math.abs(fr)),
-                                  Math.max(Math.abs(bl), Math.abs(br)));
+                    Math.max(Math.abs(bl), Math.abs(br)));
             if (max > 1.0) {
                 fl /= max; fr /= max; bl /= max; br /= max;
             }
@@ -94,6 +95,8 @@ public class henneryBlue extends LinearOpMode {
             boolean targetVisible = (ll != null && ll.isValid());
             double tx = targetVisible ? ll.getTx() : 0.0;
             double ty = targetVisible ? ll.getTy() : 0.0;
+
+
 
             // --- Turret auto-align ---
             if (targetVisible) {
@@ -112,25 +115,30 @@ public class henneryBlue extends LinearOpMode {
             // --- Shooter auto-speed ---
             double targetShooterPower = 0.0; // initialize target power
 
-            if (gamepad1.right_bumper) {
+            if (gamepad1.b) {
                 double distance = (TARGET_HEIGHT - CAMERA_HEIGHT) /
                         Math.tan(Math.toRadians(CAMERA_ANGLE + ty));
                 distance = Math.max(MIN_DISTANCE, Math.min(MAX_DISTANCE, distance));
                 targetShooterPower = MIN_POWER + (distance - MIN_DISTANCE) / (MAX_DISTANCE - MIN_DISTANCE) * (MAX_POWER - MIN_POWER);
                 shooterMotor.setPower(targetShooterPower);
-            } else if (gamepad1.left_bumper) {
+            } else if (gamepad1.x) {
                 shooterMotor.setPower(0.0);
                 targetShooterPower = 0.0;
             }
 
 // --- Intake controls ---
-            double intakePower = gamepad1.right_trigger - gamepad1.left_trigger;
-            frontIntake.setPower(intakePower);
 
-            if (gamepad1.b) {
-                backIntake.setPower(.9);
-            } else {
-                backIntake.setPower(0);}
+            if (gamepad1.right_bumper) {
+                frontIntake.setPower(-.7);
+            }
+            else {
+                frontIntake.setPower(gamepad1.right_trigger);}
+
+            if (gamepad1.left_bumper) {
+                backIntake.setPower(-.7);
+            }
+            else {
+                backIntake.setPower(gamepad1.left_trigger);}
 
 
 // --- Turret hood ---
@@ -150,10 +158,13 @@ public class henneryBlue extends LinearOpMode {
 
 // --- LED feedback ---
             if (targetVisible){
-                leftLed.setPosition(.611);
-                rightLed.setPosition(.611);}
-            else { leftLed.setPosition(0);
-                rightLed.setPosition(0);}
+                rightLed.setPosition(.611);
+                leftLed.setPosition(.611);}
+            else {
+                leftLed.setPosition(0);
+            rightLed.setPosition(0);}
+            
+           
 
             // ----Elevator up-----
             if(gamepad1.a){
@@ -173,7 +184,7 @@ public class henneryBlue extends LinearOpMode {
             boolean shooterAtSpeed = Math.abs(shooterMotor.getPower() - targetShooterPower) < 0.02;
             telemetry.addData("Shooter At Speed", shooterAtSpeed);
 
-
+            
             telemetry.update();
 
         }

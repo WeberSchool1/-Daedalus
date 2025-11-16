@@ -106,8 +106,6 @@ public class henneryRed extends LinearOpMode {
                     double turretPower = kP_TURRET * tx;
                     turretPower = clamp(turretPower, -0.5, 0.5);
                     turretSpin.setPower(turretPower);
-                } else {
-                    turretSpin.setPower(0.0);
                 }
             } else {
                 turretSpin.setPower(0.0);
