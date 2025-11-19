@@ -112,7 +112,7 @@ public class Tuning extends SelectableOpMode {
     /** This creates a full stop of the robot by setting the drive motors to run at 0 power. */
     public static void stopRobot() {
         follower.startTeleopDrive(true);
-        follower.setTeleOpDrive(0,0,0,true);
+        follower.setTeleOpDrive(0,0,0,false);
     }
 }
 
@@ -328,7 +328,7 @@ class TurnTuner extends OpMode {
  */
 class ForwardVelocityTuner extends OpMode {
     private final ArrayList<Double> velocities = new ArrayList<>();
-    public static double DISTANCE = 48;
+    public static double DISTANCE = 20;
     public static double RECORD_NUMBER = 10;
 
     private boolean end;
@@ -435,7 +435,7 @@ class ForwardVelocityTuner extends OpMode {
 class LateralVelocityTuner extends OpMode {
     private final ArrayList<Double> velocities = new ArrayList<>();
 
-    public static double DISTANCE = 48;
+    public static double DISTANCE = 20;
     public static double RECORD_NUMBER = 10;
 
     private boolean end;

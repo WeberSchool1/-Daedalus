@@ -64,6 +64,8 @@ public class Autotwolaucnh extends LinearOpMode {
 
         waitForStart();
 
+        turretSpin.setPower(0);
+
         LLResult ll = limelight.getLatestResult();
         boolean targetVisible = (ll != null && ll.isValid());
         double tx = targetVisible ? ll.getTx() : 0.0;
@@ -72,33 +74,8 @@ public class Autotwolaucnh extends LinearOpMode {
         // --- 1️⃣ Spin up shooter motor ---
         double targetPower = 0.65;                   // flywheel power level
         shooterMotor.setPower(targetPower);
-        double targetVelocity = 6000 * targetPower; // estimate in ticks/sec
-        double tolerance = 0.05;                    // 5% tolerance
 
-        int lastTicks = shooterMotor.getCurrentPosition();
-        long lastTime = System.currentTimeMillis();
-        double velocity = 0;
-
-        // --- 2️⃣ Wait for shooter to reach target velocity ---
-        while (opModeIsActive()) {
-            int currentTicks = shooterMotor.getCurrentPosition();
-            long now = System.currentTimeMillis();
-            double dt = (now - lastTime) / 1000.0;
-            if (dt > 0) velocity = (currentTicks - lastTicks) / dt;
-
-            lastTicks = currentTicks;
-            lastTime = now;
-
-            boolean upToSpeed = Math.abs(velocity - targetVelocity)
-                    <= (targetVelocity * tolerance);
-
-            telemetry.addData("Velocity (ticks/sec)", velocity);
-            telemetry.addData("Target Velocity", targetVelocity);
-            telemetry.addData("Up to speed?", upToSpeed);
-            telemetry.update();
-
-            if (upToSpeed) break; // ready to shoot
-        }
+        sleep(3000);
 
         // --- 3️⃣ Feed FIRST ball ---
         telemetry.addLine("Feeding first ball...");
@@ -126,7 +103,7 @@ public class Autotwolaucnh extends LinearOpMode {
         sleep(1000);
         elevator.setPosition(.6);
 
-        backIntake.setPower(1.0);
+        backIntake.setPower(.9);
         sleep(1500);
         backIntake.setPower(0);
 
@@ -140,12 +117,25 @@ public class Autotwolaucnh extends LinearOpMode {
         sleep(500);
         shooterMotor.setPower(0.0);
 
-        double drivePower = 0.3;
+        double drivePower = 0.27;
         frontLeft.setPower(drivePower);
         frontRight.setPower(drivePower);
         backLeft.setPower(drivePower);
         backRight.setPower(drivePower);
-        sleep(3000);
+        sleep(2400);
+
+        frontLeft.setPower(.4);
+        frontRight.setPower(-.4);
+        backLeft.setPower(.4);
+        backRight.setPower(-.4);
+        sleep(900);
+
+        frontLeft.setPower(.4);
+        frontRight.setPower(.4);
+        backLeft.setPower(.4);
+        backRight.setPower(.4);
+        sleep(1500);
+
 
         // --- 8️⃣ Stop all ---
         frontLeft.setPower(0);
