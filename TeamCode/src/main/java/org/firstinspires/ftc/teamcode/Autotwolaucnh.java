@@ -30,7 +30,7 @@ public class Autotwolaucnh extends LinearOpMode {
 
     private DcMotor frontLeft, frontRight, backLeft, backRight;
     private DcMotor shooterMotor, turretSpin, backIntake, frontIntake;
-    private Servo elevator;
+    private Servo elevator, leftLed;
     private Limelight3A limelight;
     private IMU imu;
 
@@ -44,6 +44,7 @@ public class Autotwolaucnh extends LinearOpMode {
         backIntake = hardwareMap.get(DcMotor.class, "backIntake");
         frontIntake = hardwareMap.get(DcMotor.class, "frontIntake");
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
+        leftLed = hardwareMap.get(Servo.class, "LEDLeft");
         imu = hardwareMap.get(IMU.class, "imu");
 
         frontLeft = hardwareMap.get(DcMotor.class, "frontLeft");
@@ -61,8 +62,11 @@ public class Autotwolaucnh extends LinearOpMode {
         shooterMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         telemetry.addLine("Ready to run");
         telemetry.update();
+        limelight.pipelineSwitch(4);
+
 
         waitForStart();
+        limelight.start();
 
         turretSpin.setPower(0);
 
@@ -103,8 +107,8 @@ public class Autotwolaucnh extends LinearOpMode {
         sleep(1000);
         elevator.setPosition(.6);
 
-        backIntake.setPower(.9);
-        sleep(1500);
+        backIntake.setPower(1);
+        sleep(1000);
         backIntake.setPower(0);
 
         sleep(1000);
@@ -117,7 +121,7 @@ public class Autotwolaucnh extends LinearOpMode {
         sleep(500);
         shooterMotor.setPower(0.0);
 
-        double drivePower = 0.27;
+        double drivePower = 0.25;
         frontLeft.setPower(drivePower);
         frontRight.setPower(drivePower);
         backLeft.setPower(drivePower);
@@ -128,21 +132,43 @@ public class Autotwolaucnh extends LinearOpMode {
         frontRight.setPower(-.4);
         backLeft.setPower(.4);
         backRight.setPower(-.4);
-        sleep(900);
+        sleep(800);
 
+        frontIntake.setPower(1);
         frontLeft.setPower(.4);
         frontRight.setPower(.4);
         backLeft.setPower(.4);
         backRight.setPower(.4);
-        sleep(1500);
+        sleep(3500);
 
-        frontIntake.setPower(1);
-        frontLeft.setPower(.5);
-        frontRight.setPower(.5);
-        backLeft.setPower(.5);
-        backRight.setPower(.5);
-        sleep(2500);
+        frontLeft.setPower(-.8);
+        frontRight.setPower(-.8);
+        backLeft.setPower(-.8);
+        backRight.setPower(-.8);
+        sleep(1000);
 
+        frontLeft.setPower(-.3);
+        frontRight.setPower(.3);
+        backLeft.setPower(-.3);
+        backRight.setPower(.3);
+        sleep(300);
+
+        frontLeft.setPower(-.2);
+        frontRight.setPower(-.2);
+        backLeft.setPower(-.2);
+        backRight.setPower(-.2);
+        sleep(100);
+
+        frontLeft.setPower(0);
+        frontRight.setPower(0);
+        backLeft.setPower(0);
+        backRight.setPower(0);
+
+        shooterMotor.setPower(.65);
+
+
+
+        // --- 3️⃣ Feed FIRST ball ---
 
 
 
