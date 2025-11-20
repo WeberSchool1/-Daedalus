@@ -30,6 +30,7 @@ public class henneryBlue extends LinearOpMode {
     private final double MAX_DISTANCE = 140.0;  // inches
     private final double MIN_POWER = 0.45;
     private final double MAX_POWER = 0.78;
+    private int slowdown = 1;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -80,10 +81,10 @@ public class henneryBlue extends LinearOpMode {
             double driveX = gamepad1.left_stick_x * DRIVE_SCALE;
             double turn = gamepad1.right_stick_x * DRIVE_SCALE;
 
-            double fl = driveY - driveX + turn;
-            double fr = driveY + driveX - turn;
-            double bl = driveY + driveX + turn;
-            double br = driveY - driveX - turn;
+            double fl = (driveY - driveX + turn)/slowdown;
+            double fr = (driveY + driveX - turn)/slowdown;
+            double bl = (driveY + driveX + turn)/slowdown;
+            double br = (driveY - driveX - turn)/slowdown;
 
             double max = Math.max(Math.max(Math.abs(fl), Math.abs(fr)),
                     Math.max(Math.abs(bl), Math.abs(br)));
@@ -133,13 +134,13 @@ public class henneryBlue extends LinearOpMode {
 // --- Intake controls ---
 
             if (gamepad1.right_bumper) {
-                frontIntake.setPower(-.7);
+                frontIntake.setPower(-.3);
             }
             else {
                 frontIntake.setPower(gamepad1.right_trigger);}
 
             if (gamepad1.left_bumper) {
-                backIntake.setPower(-.7);
+                backIntake.setPower(-.3);
             }
             else {
                 backIntake.setPower(gamepad1.left_trigger);}
@@ -158,7 +159,12 @@ public class henneryBlue extends LinearOpMode {
             if (gamepad1.dpad_right){
                 turretSpin.setPower(.3);
             }
-
+//--- drive slower ---
+            if (gamepad1.y) {
+                slowdown = 3;
+            }
+            else {
+                slowdown = 1;}
 
 // --- LED feedback ---
             if (targetVisible){
