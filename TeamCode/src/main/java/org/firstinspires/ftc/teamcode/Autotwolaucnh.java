@@ -136,6 +136,15 @@ public class Autotwolaucnh extends LinearOpMode {
         backRight.setPower(.4);
         sleep(1500);
 
+        frontIntake.setPower(1);
+        frontLeft.setPower(.5);
+        frontRight.setPower(.5);
+        backLeft.setPower(.5);
+        backRight.setPower(.5);
+        sleep(2500);
+
+
+
 
         // --- 8️⃣ Stop all ---
         frontLeft.setPower(0);
