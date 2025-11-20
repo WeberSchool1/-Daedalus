@@ -73,6 +73,7 @@ public class henneryBlue extends LinearOpMode {
 
         rightPTO.setPosition(.075);
         leftPTO.setPosition(.045);
+
         while (opModeIsActive()) {
             // --- Drive controls ---
             double driveY = -gamepad1.left_stick_y * DRIVE_SCALE;
