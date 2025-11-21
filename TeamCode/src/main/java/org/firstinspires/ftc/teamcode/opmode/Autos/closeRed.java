@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.opmode.Autos;
 
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
@@ -9,8 +9,8 @@ import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
 
 
-@Autonomous(name="closeblue", group="Autonomous")
-public class closeblue extends LinearOpMode {
+@Autonomous(name="closered", group="Autonomous")
+public class closeRed extends LinearOpMode {
     private final double kP_TURRET = 0.02;
     private final double ALIGN_TOLERANCE = 1.0; // degrees
     private final double CAMERA_HEIGHT = 12.54; // inches
@@ -154,10 +154,10 @@ public class closeblue extends LinearOpMode {
         double strafePower = 0.5;
 
 // Mecanum strafing configuration
-        frontLeft.setPower(-strafePower);
-        backLeft.setPower(strafePower);
-        frontRight.setPower(strafePower);
-        backRight.setPower(-strafePower);
+        frontLeft.setPower(strafePower);
+        backLeft.setPower(-strafePower);
+        frontRight.setPower(-strafePower);
+        backRight.setPower(strafePower);
 
         sleep(1500);
 

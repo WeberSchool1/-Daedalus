@@ -1,21 +1,19 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.opmode.Teleop;
 
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
-import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
 
-@TeleOp(name = "henneryBlue", group = "TeleOp")
-public class henneryBlue extends LinearOpMode {
+@TeleOp(name = "henneryRed", group = "TeleOp")
+public class henneryRed extends LinearOpMode {
     private static final double DRIVE_SCALE = 0.85;
 
     private DcMotor frontLeft, frontRight, backLeft, backRight;
     private DcMotor shooterMotor, frontIntake, backIntake, turretSpin;
-    private Servo turretHood, rightLed, leftLed, elevator,rightPTO,leftPTO;
+    private Servo turretHood, rightLed, leftLed, elevator;
     private Limelight3A limelight;
 
     // Turret auto-align constants
@@ -24,13 +22,12 @@ public class henneryBlue extends LinearOpMode {
 
     // Shooter auto-speed constants
     private final double CAMERA_HEIGHT = 12.54; // inches
-    private final double TARGET_HEIGHT = 29.5;  // example: hub height
+    private final double TARGET_HEIGHT = 24.0;  // example: hub height
     private final double CAMERA_ANGLE = 19.0;   // degrees
     private final double MIN_DISTANCE = 20.0;   // inches
     private final double MAX_DISTANCE = 140.0;  // inches
     private final double MIN_POWER = 0.45;
     private final double MAX_POWER = 0.78;
-    private int slowdown = 1;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -56,15 +53,12 @@ public class henneryBlue extends LinearOpMode {
         backIntake = hardwareMap.get(DcMotor.class, "backIntake");
         turretSpin = hardwareMap.get(DcMotor.class, "turretOne");
 
-
-        rightPTO = hardwareMap.get(Servo.class,"rightPTO");
-        leftPTO = hardwareMap.get(Servo.class,"rightPTO");
         turretHood = hardwareMap.get(Servo.class, "turretHood");
         elevator = hardwareMap.get(Servo.class, "turret");
         leftLed = hardwareMap.get(Servo.class, "LEDLeft");
         rightLed = hardwareMap.get(Servo.class, "LEDRight");
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
-        limelight.pipelineSwitch(4);
+        limelight.pipelineSwitch(5);
 
         telemetry.addLine("henneryFinal initialized. Press start.");
         telemetry.update();
@@ -72,19 +66,16 @@ public class henneryBlue extends LinearOpMode {
         waitForStart();
         limelight.start();
 
-        rightPTO.setPosition(.075);
-        leftPTO.setPosition(.045);
-
         while (opModeIsActive()) {
             // --- Drive controls ---
             double driveY = -gamepad1.left_stick_y * DRIVE_SCALE;
             double driveX = gamepad1.left_stick_x * DRIVE_SCALE;
             double turn = gamepad1.right_stick_x * DRIVE_SCALE;
 
-            double fl = (driveY - driveX + turn)/slowdown;
-            double fr = (driveY + driveX - turn)/slowdown;
-            double bl = (driveY + driveX + turn)/slowdown;
-            double br = (driveY - driveX - turn)/slowdown;
+            double fl = driveY - driveX + turn;
+            double fr = driveY + driveX - turn;
+            double bl = driveY + driveX + turn;
+            double br = driveY - driveX - turn;
 
             double max = Math.max(Math.max(Math.abs(fl), Math.abs(fr)),
                     Math.max(Math.abs(bl), Math.abs(br)));
@@ -102,6 +93,8 @@ public class henneryBlue extends LinearOpMode {
             boolean targetVisible = (ll != null && ll.isValid());
             double tx = targetVisible ? ll.getTx() : 0.0;
             double ty = targetVisible ? ll.getTy() : 0.0;
+
+
 
             // --- Turret auto-align ---
             if (targetVisible) {
@@ -134,13 +127,13 @@ public class henneryBlue extends LinearOpMode {
 // --- Intake controls ---
 
             if (gamepad1.right_bumper) {
-                frontIntake.setPower(-.3);
+                frontIntake.setPower(-.7);
             }
             else {
                 frontIntake.setPower(gamepad1.right_trigger);}
 
             if (gamepad1.left_bumper) {
-                backIntake.setPower(-.3);
+                backIntake.setPower(-.7);
             }
             else {
                 backIntake.setPower(gamepad1.left_trigger);}
@@ -159,36 +152,23 @@ public class henneryBlue extends LinearOpMode {
             if (gamepad1.dpad_right){
                 turretSpin.setPower(.3);
             }
-//--- drive slower ---
-            if (gamepad1.y) {
-                slowdown = 3;
-            }
-            else {
-                slowdown = 1;}
+
 
 // --- LED feedback ---
             if (targetVisible){
-                rightLed.setPosition(.611);
-                leftLed.setPosition(.611);}
+                rightLed.setPosition(.661);
+                leftLed.setPosition(.661);}
             else {
                 leftLed.setPosition(0);
-            rightLed.setPosition(0);}
-            
-           
+                rightLed.setPosition(0);}
+
+
 
             // ----Elevator up-----
             if(gamepad1.a){
                 elevator.setPosition(.0);
             }else {
                 elevator.setPosition(.5);
-            }
-
-            if(gamepad1.dpad_up){
-                rightPTO.setPosition(.075);
-                leftPTO.setPosition(.045);
-            } if (gamepad1.dpad_down){
-                rightPTO.setPosition(.55);
-                leftPTO.setPosition(.49);
             }
 // --- Telemetry ---
 
@@ -202,7 +182,7 @@ public class henneryBlue extends LinearOpMode {
             boolean shooterAtSpeed = Math.abs(shooterMotor.getPower() - targetShooterPower) < 0.02;
             telemetry.addData("Shooter At Speed", shooterAtSpeed);
 
-            
+
             telemetry.update();
 
         }
