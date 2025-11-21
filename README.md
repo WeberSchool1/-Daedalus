@@ -1,3 +1,7 @@
+## fTC team 14943
+Hello, if you are reading this, then hi. This is our team's code for the 2025 FTC season, Decode. We have one coder, and I have made all of this myself. We use Limelight3A and Gobilda pintiont. If you have questions, feel free to reach out. 
+
+
 ## NOTICE
 
 This repository contains the public FTC SDK for the DECODE (2025-2026) competition season.
