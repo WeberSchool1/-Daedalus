@@ -1,5 +1,6 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.opmode.Autos;
 
+import com.bylazar.configurables.annotations.Configurable;
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
@@ -8,9 +9,8 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
-
-
-@Autonomous(name="FarBlue", group="Autonomous")
+@Configurable
+@Autonomous(name="Audience3ball", group="Autonomous", preselectTeleOp = "henneryBlue")
 public class FarBlue extends LinearOpMode {
     private final double kP_TURRET = 0.02;
     private final double ALIGN_TOLERANCE = 1.0; // degrees
