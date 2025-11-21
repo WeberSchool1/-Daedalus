@@ -10,7 +10,7 @@ import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
 
 
-@Autonomous(name="Audience3ball", group="Autonomous")
+@Autonomous(name="FarBlue", group="Autonomous")
 public class FarBlue extends LinearOpMode {
     private final double kP_TURRET = 0.02;
     private final double ALIGN_TOLERANCE = 1.0; // degrees
