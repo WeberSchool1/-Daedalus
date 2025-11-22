@@ -11,10 +11,10 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
-@TeleOp(name = "BlueFieldCentric", group = "TeleOp")
-public class BlueFieldCentric extends LinearOpMode {
+@TeleOp(name = "RedFieldCentric", group = "TeleOp")
+public class RedFieldCentric extends LinearOpMode {
 
-    public static final double DRIVE_SCALE = 0.85;
+    private static final double DRIVE_SCALE = 0.85;
 
     private DcMotor frontLeft, frontRight, backLeft, backRight;
     private DcMotor shooterMotor, frontIntake, backIntake, turretSpin;
@@ -23,11 +23,9 @@ public class BlueFieldCentric extends LinearOpMode {
 
     private IMU imu;
 
-    // Turret alignment constants
     private final double kP_TURRET = 0.02;
     private final double deadbandDeg = 0.5;
 
-    // Shooter speed constants
     private final double CAMERA_HEIGHT = 12.54;
     private final double TARGET_HEIGHT = 29.5;
     private final double CAMERA_ANGLE = 19.0;
@@ -68,11 +66,10 @@ public class BlueFieldCentric extends LinearOpMode {
         rightLed = hardwareMap.get(Servo.class, "LEDRight");
 
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
-        limelight.pipelineSwitch(4);
+        limelight.pipelineSwitch(5);
 
         // ------------ IMU Setup (FIELD CENTRIC) ------------
         imu = hardwareMap.get(IMU.class, "imu");
-
         RevHubOrientationOnRobot orientationOnRobot =
                 new RevHubOrientationOnRobot(
                         RevHubOrientationOnRobot.LogoFacingDirection.RIGHT,
@@ -80,7 +77,7 @@ public class BlueFieldCentric extends LinearOpMode {
                 );
         imu.initialize(new IMU.Parameters(orientationOnRobot));
 
-        telemetry.addLine("BlueFieldCentric Ready");
+        telemetry.addLine("RedFieldCentric Ready");
         telemetry.update();
 
         waitForStart();
@@ -92,7 +89,7 @@ public class BlueFieldCentric extends LinearOpMode {
         // ===================== TELEOP LOOP =====================
         while (opModeIsActive()) {
 
-            // ---------------- FIELD-CENTRIC DRIVE ----------------
+            // ---------------- FIELD-CENTRIC DRIVE (RED MIRROR) ----------------
             if (gamepad1.dpad_down) imu.resetYaw();   // reset heading
 
             double forward = -gamepad1.left_stick_y * DRIVE_SCALE;
@@ -103,8 +100,8 @@ public class BlueFieldCentric extends LinearOpMode {
             double theta = Math.atan2(forward, strafe);
             double r = Math.hypot(strafe, forward);
 
-            // Rotate by robot heading
-            theta -= imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
+            // Mirror for Red alliance: rotate by (yaw + 180°)
+            theta += Math.toRadians(180) - imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
 
             // Back to cartesian
             double fwd = r * Math.cos(theta);
@@ -112,12 +109,11 @@ public class BlueFieldCentric extends LinearOpMode {
 
             driveRobotCentric(fwd / slowdown, str / slowdown, turn / slowdown);
 
-            // ---------------- LIMELIGHT (unchanged) ----------------
+            // ---------------- LIMELIGHT ----------------
             LLResult ll = limelight.getLatestResult();
             boolean targetVisible = (ll != null && ll.isValid());
             double tx = targetVisible ? ll.getTx() : 0;
 
-            // Turret auto-align
             if (targetVisible) {
                 double turretPower = (Math.abs(tx) > deadbandDeg) ? kP_TURRET * tx : 0;
                 turretSpin.setPower(clamp(turretPower, -0.5, 0.5));
@@ -125,7 +121,6 @@ public class BlueFieldCentric extends LinearOpMode {
                 turretSpin.setPower(0);
             }
 
-            // LEDs
             if (targetVisible) {
                 rightLed.setPosition(.611);
                 leftLed.setPosition(.611);
@@ -134,48 +129,37 @@ public class BlueFieldCentric extends LinearOpMode {
                 rightLed.setPosition(0);
             }
 
-            // ---------------- Shooter Auto Speed ----------------
+            // Shooter auto-speed
             double shooterPowerTarget = 0;
-
             if (gamepad1.b) {
                 double ty = ll != null ? ll.getTy() : 0;
                 double distance = (TARGET_HEIGHT - CAMERA_HEIGHT) /
                         Math.tan(Math.toRadians(CAMERA_ANGLE + ty));
-
                 distance = Math.max(MIN_DISTANCE, Math.min(MAX_DISTANCE, distance));
                 shooterPowerTarget = MIN_POWER +
                         (distance - MIN_DISTANCE) / (MAX_DISTANCE - MIN_DISTANCE)
                                 * (MAX_POWER - MIN_POWER);
-
                 shooterMotor.setPower(shooterPowerTarget);
             } else if (gamepad1.x) {
                 shooterMotor.setPower(0);
             }
 
-            // ---------------- Intake Controls ----------------
-            frontIntake.setPower(
-                    gamepad1.right_bumper ? -0.3 : gamepad1.right_trigger
-            );
-            backIntake.setPower(
-                    gamepad1.left_bumper ? -0.3 : gamepad1.left_trigger
-            );
+            // ---------------- Intake & Turret ----------------
+            frontIntake.setPower(gamepad1.right_bumper ? -0.3 : gamepad1.right_trigger);
+            backIntake.setPower(gamepad1.left_bumper ? -0.3 : gamepad1.left_trigger);
 
-            // ---------------- Turret Hood ----------------
-
-            // Manual turret override
-            if (gamepad1.dpad_left)  turretSpin.setPower(-0.3);
+            if (gamepad1.dpad_up) turretHood.setPosition(0.8);
+            if (gamepad1.dpad_down) turretHood.setPosition(0.45);
+            if (gamepad1.dpad_left) turretSpin.setPower(-0.3);
             if (gamepad1.dpad_right) turretSpin.setPower(0.3);
 
             slowdown = gamepad1.y ? 3 : 1;
-
-            // Elevator
             elevator.setPosition(gamepad1.a ? 0.0 : 0.5);
 
             telemetry.update();
         }
     }
 
-    // ---------------- Helper: robot-centric drive ----------------a C
     private void driveRobotCentric(double forward, double right, double rotate) {
         double fl = forward + right + rotate;
         double fr = forward - right - rotate;

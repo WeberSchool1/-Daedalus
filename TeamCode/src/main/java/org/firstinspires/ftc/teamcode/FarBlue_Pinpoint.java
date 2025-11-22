@@ -67,8 +67,7 @@ public class FarBlue_Pinpoint extends LinearOpMode {
                 GoBildaPinpointDriver.EncoderDirection.FORWARD,
                 GoBildaPinpointDriver.EncoderDirection.FORWARD
         );
-        pinpoint.resetPosAndIMU();
-        pinpoint.setPosition(new Pose2D(DistanceUnit.INCH, 0, 0, AngleUnit.DEGREES, 0));
+
 
         limelight.pipelineSwitch(4);
 
@@ -131,19 +130,12 @@ public class FarBlue_Pinpoint extends LinearOpMode {
 
         shooterMotor.setPower(0.0);
 
+        pinpoint.resetPosAndIMU();
+        pinpoint.setPosition(new Pose2D(DistanceUnit.INCH, 55, -12, AngleUnit.DEGREES, 0));
+
         // --- 4️⃣ Drive sequence using Pinpoint ---
         // Example placeholders — replace targetX/targetY with real field coordinates later
-        moveToPosition(30, 0, MAX_DRIVE_POWER); // move forward to first row
-        turnToHeading(90, MAX_TURN_POWER); // turn left
-        moveToPosition(30, 20, MAX_DRIVE_POWER); // drive forward while intaking
-        frontIntake.setPower(1.0);
-        sleep(3500);
-        frontIntake.setPower(0.0);
-
-        moveToPosition(10, 20, MAX_DRIVE_POWER); // go backward fast
-        turnToHeading(0, MAX_TURN_POWER); // turn right
-        moveToPosition(0, 0, MAX_DRIVE_POWER); // back to shooting zone
-
+        moveToPosition(35, -12, MAX_DRIVE_POWER); // move forward to first row
         stopAllMotors();
 
         telemetry.addLine("All done!");

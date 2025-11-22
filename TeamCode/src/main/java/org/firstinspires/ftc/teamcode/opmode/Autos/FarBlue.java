@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.opmode.Autos;
 
+import static androidx.core.math.MathUtils.clamp;
+
 import com.bylazar.configurables.annotations.Configurable;
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.hardware.limelightvision.LLResult;
@@ -12,6 +14,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 @Configurable
 @Autonomous(name="Audience3ball", group="Autonomous", preselectTeleOp = "henneryBlue")
 public class FarBlue extends LinearOpMode {
+    private static final double DEADZONE_TURRET = .5;
     private final double kP_TURRET = 0.02;
     private final double ALIGN_TOLERANCE = 1.0; // degrees
     private final double CAMERA_HEIGHT = 12.54; // inches
@@ -68,34 +71,13 @@ public class FarBlue extends LinearOpMode {
         waitForStart();
         limelight.start();
 
-        // --- Limelight Turret auto Align ---
-        LLResult ll;
-        double tx;
-        do {
-            ll = limelight.getLatestResult();
-            boolean targetVisible = (ll != null && ll.isValid());
-            tx = targetVisible ? ll.getTx() : 0.0;
 
-            // Turret alignment
-            if (targetVisible && Math.abs(tx) > deadbandDeg) {
-                double turretPower = kP_TURRET * tx;
-                turretPower = Math.max(-0.5, Math.min(turretPower, 0.5));
-                turretSpin.setPower(turretPower);
-            } else {
-                turretSpin.setPower(0.0);
-            }
-
-            // LED indicator
-            leftLed.setPosition(targetVisible ? 0.611 : 0);
-
-            sleep(20); // small delay for CPU
-        } while (Math.abs(tx) > deadbandDeg && opModeIsActive());
 
             // --- 1️⃣ Spin up shooter motor ---
             double targetPower = 0.65;                   // flywheel power level
             shooterMotor.setPower(targetPower);
 
-            sleep(3000);
+            sleep(3500);
 
             // --- 3️⃣ Lift FIRST ball ---
             telemetry.addLine("Lifting first ball...");
@@ -103,8 +85,6 @@ public class FarBlue extends LinearOpMode {
             elevator.setPosition(0);   // lift first ball up to shooter
             sleep(1000);
             elevator.setPosition(.6);
-
-            sleep(1000);
 
             // --- 4️⃣ Reload sequence: use frontIntake to load next ball ---
             telemetry.addLine("Reloading second ball...");
@@ -123,11 +103,16 @@ public class FarBlue extends LinearOpMode {
             sleep(1000);
             elevator.setPosition(.6);
 
+            sleep(1000);
+
             // --- Feed Third Ball ---
             backIntake.setPower(1);
-            sleep(1000);
+            frontIntake.setPower(1);
+            sleep(1700);
+            frontIntake.setPower(0);
             backIntake.setPower(0);
-            // for rid of the sleep functoion her see what that chnages
+
+            sleep(500);// for rid of the sleep functoion her see what that chnages
 
             elevator.setPosition(0);
             sleep(1000);
@@ -159,7 +144,14 @@ public class FarBlue extends LinearOpMode {
             frontRight.setPower(.4);
             backLeft.setPower(.4);
             backRight.setPower(.4);
-            sleep(3500);
+            sleep(1700);
+
+            backIntake.setPower(1);
+            sleep(700);
+            backIntake.setPower(0);
+            frontIntake.setPower(-.2);
+            sleep(200);
+            frontIntake.setPower(0);
 
             // --- goes back wards Fast ---
             frontLeft.setPower(-.8);
@@ -173,24 +165,65 @@ public class FarBlue extends LinearOpMode {
             frontRight.setPower(.3);
             backLeft.setPower(-.3);
             backRight.setPower(.3);
-            sleep(300);
+            sleep(400);
 
             // --- goes back to shooting zone ---
-            frontLeft.setPower(-.2);
-            frontRight.setPower(-.2);
-            backLeft.setPower(-.2);
-            backRight.setPower(-.2);
-            sleep(100);
+            frontLeft.setPower(-.3);
+            frontRight.setPower(-.3);
+            backLeft.setPower(-.3);
+            backRight.setPower(-.3);
+            sleep(1000);
 
             frontLeft.setPower(0);
             frontRight.setPower(0);
             backLeft.setPower(0);
             backRight.setPower(0);
 
-            shooterMotor.setPower(.65);
+        turretSpin.setPower(.3);
+        sleep(200);
+        turretSpin.setPower(0);
 
 
-            // --- 3️⃣ Feed FIRST ball ---
+        shooterMotor.setPower(targetPower);
+
+        sleep(3000);
+
+        // --- 3️⃣ Lift FIRST ball ---
+        telemetry.addLine("Lifting first ball...");
+        telemetry.update();
+        elevator.setPosition(0);   // lift first ball up to shooter
+        sleep(500);
+        elevator.setPosition(.6);
+        elevator.setPosition(0);   // lift first ball up to shooter
+        sleep(500);
+        elevator.setPosition(.6);
+
+        sleep(1000);
+
+        // --- 4️⃣ Reload sequence: use frontIntake to load next ball ---
+        telemetry.addLine("Reloading second ball...");
+        telemetry.update();
+        frontIntake.setPower(1.0);
+        sleep(1500);   // let front intake load onto elevator
+        frontIntake.setPower(0.0);
+
+        // --- 5️⃣ Wait for elevator to reset ---
+        sleep(500);
+
+        // --- 6️⃣ Lift SECOND ball ---
+        telemetry.addLine("Feeding second ball...");
+        telemetry.update();
+        elevator.setPosition(0);   // lift second ball
+        sleep(1000);
+        elevator.setPosition(.6);
+
+        frontLeft.setPower(drivePower);
+        frontRight.setPower(drivePower);
+        backLeft.setPower(drivePower);
+        backRight.setPower(drivePower);
+        sleep(2000);
+
+
 
 
             // --- 8️⃣ Stop all ---
